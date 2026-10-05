@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# skills de agente: o conteudo real fica em .agents/, versionado.
+# .claude/skills sao symlinks com caminho absoluto desta maquina — quebram
+# em qualquer outro clone.
+.claude/
