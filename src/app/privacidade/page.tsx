@@ -106,7 +106,7 @@ export default function Pagina() {
         <h2>Contato</h2>
         <p>
           Dúvida, correção ou pedido de exclusão:{' '}
-          <strong>[COLOQUE AQUI O E-MAIL DE CONTATO DO PROJETO]</strong>
+          <strong>ronisonmaria@gmail.com</strong>
         </p>
         <p>
           Ao pedir exclusão, diga a cidade e a data aproximada em que respondeu — é
