@@ -240,3 +240,116 @@ footer{
 footer a{color:var(--muted)}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===========================================================================
+   PAINEL DE RESULTADOS
+
+   Cores dos gráficos validadas com o script da skill de dataviz, nos dois
+   temas: banda de luminosidade, piso de croma, separação para daltonismo
+   (ΔE 20.4 no escuro, 20.8 no claro) e contraste contra a superfície.
+   As do mapa (--pres, --rem) reprovaram: dessaturadas e fora da banda.
+   =========================================================================== */
+:root{
+  --graf:#309ebb;
+  --graf-pres:#b68539;
+  --graf-rem:#309ebb;
+  --graf-neutro:#6e8793;
+}
+:root[data-theme="light"]{
+  --graf:#007a99;
+  --graf-pres:#935f00;
+  --graf-rem:#007a99;
+  --graf-neutro:#7d919b;
+}
+
+/* o painel precisa de mais largura que o formulário */
+body:has(.painel) .wrap{max-width:1040px}
+
+/* ---------- filtros ---------- */
+.filtros{
+  display:flex;gap:1.25rem;flex-wrap:wrap;align-items:baseline;
+  padding:.85rem 0 1.1rem;border-top:1px solid var(--line-soft);
+  border-bottom:1px solid var(--line-soft);margin-bottom:1.75rem;
+}
+.filtro-grupo{display:flex;gap:.35rem;align-items:baseline;flex-wrap:wrap}
+.filtro-nome{font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.03em;
+  text-transform:uppercase;margin-right:.15rem}
+.filtro-op{
+  font-size:.82rem;text-decoration:none;color:var(--ink-soft);
+  border:1px solid var(--line-soft);border-radius:6px;padding:.18rem .5rem;
+}
+.filtro-op:hover{background:var(--surface-2)}
+.filtro-op.is-ativo{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:600}
+
+/* ---------- números ---------- */
+.tiles{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));
+  margin-bottom:2rem}
+.tile{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:.85rem .95rem;box-shadow:var(--shadow);
+}
+.tile-destaque{border-color:color-mix(in srgb,var(--graf) 45%,var(--line))}
+.tile-rotulo{font-size:.74rem;color:var(--muted);margin:0 0 .3rem;line-height:1.3}
+.tile-valor{
+  margin:0;font-size:1.9rem;line-height:1;font-weight:700;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;
+}
+.tile-sufixo{font-size:.95rem;font-weight:600;color:var(--muted);margin-left:.1rem}
+.tile-sem{font-size:.95rem;font-weight:500;color:var(--muted);letter-spacing:0}
+.tile-detalhe{font-size:.72rem;color:var(--muted);margin:.35rem 0 0;line-height:1.3}
+
+/* ---------- gráficos ---------- */
+.grafs{display:grid;gap:1rem;grid-template-columns:1fr;margin-bottom:2rem}
+@media (min-width:860px){.grafs{grid-template-columns:1fr 1fr}}
+.graf{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:1rem 1.1rem;box-shadow:var(--shadow);
+}
+.graf h3{font-size:.95rem;font-weight:600;margin:0;letter-spacing:-.01em}
+.graf-nota{font-size:.74rem;color:var(--muted);margin:.25rem 0 0;line-height:1.4}
+.graf-vazio{font-size:.85rem;color:var(--muted);margin:.9rem 0 0}
+
+.barras{list-style:none;margin:.9rem 0 0;padding:0;display:flex;flex-direction:column;gap:.45rem}
+.barras li{display:grid;grid-template-columns:minmax(5.5rem,9rem) 1fr auto;
+  gap:.6rem;align-items:center}
+.barra-rotulo{font-size:.8rem;color:var(--ink-soft);line-height:1.25;overflow-wrap:anywhere}
+.barra-trilho{
+  height:1.15rem;background:var(--surface-2);border-radius:4px;overflow:hidden;
+  display:block;min-width:0;
+}
+.barra-marca{
+  display:block;height:100%;border-radius:0 4px 4px 0;min-width:2px;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
+}
+.barra-valor{
+  font-size:.82rem;font-weight:600;font-variant-numeric:tabular-nums;
+  white-space:nowrap;text-align:right;color:var(--ink);
+}
+.barra-valor em{font-style:normal;font-weight:400;color:var(--muted);
+  font-size:.72rem;margin-left:.35rem}
+
+/* ---------- blocos de texto ---------- */
+.bloco{margin-bottom:2.25rem}
+.bloco h2{font-size:1.2rem;font-weight:600;letter-spacing:-.02em;margin:0 0 .25rem}
+.aberta{margin-top:1.5rem}
+.aberta h3{font-size:.9rem;font-weight:600;color:var(--ink-soft);margin:0 0 .6rem;
+  line-height:1.4;max-width:62ch}
+.aberta ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.7rem}
+.aberta li{
+  background:var(--surface);border:1px solid var(--line-soft);border-left:3px solid var(--graf);
+  border-radius:0 8px 8px 0;padding:.7rem .85rem;
+}
+.citacao{
+  font-family:var(--fonte-leitura),Georgia,serif;font-size:1rem;line-height:1.55;
+  color:var(--ink);margin:0;max-width:70ch;
+}
+.citacao-meta{font-size:.72rem;color:var(--muted);margin:.4rem 0 0}
+
+/* ---------- tabela de contatos ---------- */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;
+  border:1px solid var(--line);margin-top:.9rem}
+table{border-collapse:collapse;width:100%;min-width:640px;background:var(--surface);font-size:.85rem}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-weight:600;font-size:.72rem;color:var(--muted);background:var(--surface-2);
+  text-transform:uppercase;letter-spacing:.03em}
+tr:last-child td{border-bottom:none}
