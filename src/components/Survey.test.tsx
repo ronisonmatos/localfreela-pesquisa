@@ -289,6 +289,33 @@ describe('envio', () => {
     expect(String(linha.submission_id)).toHaveLength(36);
   });
 
+  it('lê o canal de ?origem=, que é o parâmetro dos links divulgados', async () => {
+    window.history.replaceState({}, '', '/estabelecimento?origem=facebook-oco');
+    render(<Survey pesquisa={estabelecimento} />);
+    await irAteOFim();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBe('facebook-oco');
+  });
+
+  it('origem ganha de src quando os dois vêm no link', async () => {
+    window.history.replaceState({}, '', '/estabelecimento?src=antigo&origem=novo');
+    render(<Survey pesquisa={estabelecimento} />);
+    await irAteOFim();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBe('novo');
+  });
+
+  it('sem parâmetro nenhum, o canal vai vazio e o painel conta como link direto', async () => {
+    window.history.replaceState({}, '', '/estabelecimento');
+    render(<Survey pesquisa={estabelecimento} />);
+    await irAteOFim();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBeNull();
+  });
+
   it('exige consentimento quando a pessoa deixa contato', async () => {
     render(<Survey pesquisa={estabelecimento} />);
     await irAteOFim();

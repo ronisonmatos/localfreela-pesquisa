@@ -323,10 +323,23 @@ export default function Survey({ pesquisa }: { pesquisa: Pesquisa }) {
   );
 }
 
+/**
+ * De onde a pessoa veio, lido da query string do link divulgado.
+ *
+ * `origem` é o nome usado nos links que a gente publica (?origem=facebook).
+ * `src` e `utm_source` continuam valendo: o primeiro porque links antigos já
+ * circularam com ele, o segundo porque é o que ferramentas de campanha
+ * colocam sozinhas. O primeiro que vier preenchido ganha.
+ */
 function canalDaUrl() {
   try {
     const p = new URLSearchParams(window.location.search);
-    return p.get('src') ?? p.get('utm_source') ?? '';
+    for (const chave of ['origem', 'src', 'utm_source']) {
+      const v = (p.get(chave) ?? '').trim();
+      // a coluna canal tem limite de 120 caracteres no banco
+      if (v) return v.slice(0, 120);
+    }
+    return '';
   } catch {
     return '';
   }
