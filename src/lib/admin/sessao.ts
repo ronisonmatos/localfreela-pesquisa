@@ -23,8 +23,12 @@ function selo(senha: string): string {
   return createHmac('sha256', senha).update('painel-localfreela-v1').digest('hex');
 }
 
-/** Comparação em tempo constante: evita descobrir a senha medindo o tempo. */
-function iguais(a: string, b: string): boolean {
+/**
+ * Comparação em tempo constante: evita descobrir o segredo medindo o tempo da
+ * resposta. Vale para a senha do painel e para o segredo do cron — por isso
+ * mora aqui e é exportada, em vez de cada rota reinventar o timingSafeEqual.
+ */
+export function comparar(a: string, b: string): boolean {
   const ba = Buffer.from(a, 'utf8');
   const bb = Buffer.from(b, 'utf8');
   if (ba.length !== bb.length) {
@@ -44,13 +48,13 @@ export async function estadoDaSessao(): Promise<EstadoSessao> {
   const cookie = (await cookies()).get(COOKIE)?.value;
   if (!cookie) return 'anonimo';
 
-  return iguais(cookie, selo(senha)) ? 'autenticado' : 'anonimo';
+  return comparar(cookie, selo(senha)) ? 'autenticado' : 'anonimo';
 }
 
 /** true quando a senha confere e a sessão foi aberta. */
 export async function abrirSessao(tentativa: string): Promise<boolean> {
   const senha = senhaConfigurada();
-  if (!senha || !iguais(tentativa, senha)) return false;
+  if (!senha || !comparar(tentativa, senha)) return false;
 
   (await cookies()).set(COOKIE, selo(senha), {
     httpOnly: true,
