@@ -35,6 +35,7 @@ export default function Survey({ pesquisa }: { pesquisa: Pesquisa }) {
   const chave = `lf-pesquisa-${pesquisa.form}`;
   const inicio = useRef(0);
   const submissionId = useRef('');
+  const canal = useRef('');
   const honeypot = useRef<HTMLInputElement>(null);
   const topo = useRef<HTMLDivElement>(null);
 
@@ -43,10 +44,24 @@ export default function Survey({ pesquisa }: { pesquisa: Pesquisa }) {
   useEffect(() => {
     inicio.current = agora();
     submissionId.current = novoId();
+
+    /* A origem é lida na ABERTURA, não no envio: quem abre pelo link
+       divulgado, para no meio e volta depois por uma URL sem o parâmetro
+       continua contando para o canal certo — o rascunho guarda a origem
+       junto das respostas. */
+    canal.current = canalDaUrl();
+
     try {
       const bruto = localStorage.getItem(chave);
       if (!bruto) return;
       const d = JSON.parse(bruto);
+
+      /* Só vale como rede: se esta visita trouxe origem na URL, ela manda.
+         Clicar num link novo é uma informação mais recente que o rascunho. */
+      if (!canal.current && typeof d?.canal === 'string') {
+        canal.current = d.canal.trim().slice(0, 120);
+      }
+
       if (d?.respostas) {
         /* Um segundo render no carregamento é o preço de ler estado salvo:
            a página é pré-renderizada estática, e o localStorage só existe
@@ -66,7 +81,7 @@ export default function Survey({ pesquisa }: { pesquisa: Pesquisa }) {
     try {
       localStorage.setItem(
         chave,
-        JSON.stringify({ respostas: novas, passo: novoPasso })
+        JSON.stringify({ respostas: novas, passo: novoPasso, canal: canal.current })
       );
     } catch {
       /* ignora: o formulário funciona sem rascunho */
@@ -188,7 +203,7 @@ export default function Survey({ pesquisa }: { pesquisa: Pesquisa }) {
     setEstado('enviando');
     const r = await enviar(pesquisa, respostas, {
       submissionId: submissionId.current,
-      canal: canalDaUrl(),
+      canal: canal.current,
       trilha,
       segundos: segundosDesde(inicio.current),
       userAgent: navigator.userAgent,

@@ -259,15 +259,21 @@ describe('comissão', () => {
 
 /* ================= envio ================= */
 
-describe('envio', () => {
-  async function irAteOFim() {
-    await preencherPasso1();
-    await preencherPasso2();
-    await preencherPasso3();
-    await escolher('comissao_teto', 'Mais de 15%');
-    await escolher('topa_piloto', 'Sim');
-  }
+/** Do passo 2 até o fim — é onde um rascunho retomado reabre. */
+async function terminarDoPasso2() {
+  await preencherPasso2();
+  await preencherPasso3();
+  await escolher('comissao_teto', 'Mais de 15%');
+  await escolher('topa_piloto', 'Sim');
+}
 
+/** Preenche a pesquisa inteira, deixando só o envio. */
+async function irAteOFim() {
+  await preencherPasso1();
+  await terminarDoPasso2();
+}
+
+describe('envio', () => {
   it('envia e mostra o agradecimento', async () => {
     render(<Survey pesquisa={estabelecimento} />);
     await irAteOFim();
@@ -394,6 +400,59 @@ describe('rascunho', () => {
       '[data-q="cidade"] input'
     ) as HTMLInputElement;
     expect(cidade.value).toBe('Jaraguá do Sul');
+  });
+
+  it('guarda a origem junto do rascunho, já no primeiro passo', async () => {
+    window.history.replaceState({}, '', '/estabelecimento?origem=facebook-oco');
+    render(<Survey pesquisa={estabelecimento} />);
+    await preencherPasso1();
+
+    const d = JSON.parse(localStorage.getItem('lf-pesquisa-estabelecimento')!);
+    expect(d.canal).toBe('facebook-oco');
+  });
+
+  it('não perde a origem quando a pessoa volta por uma URL sem o parâmetro', async () => {
+    // abriu pelo link divulgado, respondeu parte e saiu
+    window.history.replaceState({}, '', '/estabelecimento?origem=facebook-oco');
+    const tela = render(<Survey pesquisa={estabelecimento} />);
+    await preencherPasso1();
+    tela.unmount();
+
+    // voltou depois, pela URL pelada: o rascunho reabre no passo 2
+    window.history.replaceState({}, '', '/estabelecimento');
+    render(<Survey pesquisa={estabelecimento} />);
+    expect(passo()).toContain('Passo 2 de 4');
+    await terminarDoPasso2();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBe('facebook-oco');
+  });
+
+  it('um link novo com outra origem ganha do que estava no rascunho', async () => {
+    window.history.replaceState({}, '', '/estabelecimento?origem=facebook-oco');
+    const tela = render(<Survey pesquisa={estabelecimento} />);
+    await preencherPasso1();
+    tela.unmount();
+
+    window.history.replaceState({}, '', '/estabelecimento?origem=instagram-bio');
+    render(<Survey pesquisa={estabelecimento} />);
+    await terminarDoPasso2();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBe('instagram-bio');
+  });
+
+  it('ignora canal corrompido no rascunho em vez de quebrar', async () => {
+    window.history.replaceState({}, '', '/estabelecimento');
+    localStorage.setItem(
+      'lf-pesquisa-estabelecimento',
+      JSON.stringify({ passo: 0, respostas: {}, canal: { nao: 'e string' } })
+    );
+    render(<Survey pesquisa={estabelecimento} />);
+    await irAteOFim();
+    await continuar();
+
+    expect((inserts[0] as Record<string, unknown>).canal).toBeNull();
   });
 });
 
